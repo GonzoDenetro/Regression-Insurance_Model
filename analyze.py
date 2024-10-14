@@ -48,7 +48,12 @@ bmi_df = df[df['bmi'] < max_lim]
 #CHARGES OUTLIERS
 charges_df = df[df['charges'] < 50000]
 
-
+#CORRELATION
+corr = df[['age', 'bmi', 'charges']].corr()
+print(corr)
+print("--"*50)
+corr_matrix = np.corrcoef(df[['age', 'bmi', 'charges']].values.T)
+print(corr_matrix)
 
 
 #INSIGHTS:
