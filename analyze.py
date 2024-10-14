@@ -31,6 +31,24 @@ sns.pairplot(df, height=2.5)
 plt.tight_layout()
 plt.show()
 
+#BMI OUTLIERS
+Q1_bmi = df['bmi'].quantile(0.25)
+Q2_bmi = df['bmi'].median()
+Q3_bmi = df['bmi'].quantile(0.75)
+iqr = Q3_bmi - Q1_bmi
+
+min_lim = Q1_bmi -(1.5*iqr)
+max_lim = Q3_bmi + (1.5*iqr)
+print("--"*50)
+print(f'Rango para detección de outliers: {min_lim}, {max_lim}')
+print("--"*50)
+
+bmi_df = df[df['bmi'] < max_lim]
+
+#CHARGES OUTLIERS
+charges_df = df[df['charges'] < 50000]
+
+
 
 
 #INSIGHTS:
