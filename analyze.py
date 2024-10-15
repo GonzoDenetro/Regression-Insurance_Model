@@ -9,59 +9,63 @@ import numpy as np
 # relevant features
 # ----------
 
-#LOAD DATA 
-df = pd.read_csv('./insurance.csv')
+def outliers(df, feature):    
+    Q1 = df[feature].quantile(0.25)
+    Q2 = df[feature].median()
+    Q3 = df[feature].quantile(0.75)
+    iqr = Q3 - Q1
 
-print(df.head())
-print("--"*50)
-print(df.describe())
+    min_lim = Q1 -(1.5*iqr)
+    max_lim = Q3 + (1.5*iqr)
+    return min_lim, max_lim
 
-#ONE HOT
-df_oneht = pd.get_dummies(df, columns=['sex', 'smoker', 'region'], drop_first=True, dtype='int64')
-sns.scatterplot(x=df_oneht['age'], y=df_oneht['charges'], hue=df_oneht['smoker_yes'])
+if __name__ == "__main__":
+    #LOAD DATA 
+    df = pd.read_csv('./insurance.csv')
 
-#VISUALUZE FRECUENCY 
-fig, axs = plt.subplots(2, 2, figsize=(12, 10)) #Create a a canvas with 2 rows and 2 columns
-axs = axs.flatten() #We make axs of 1D
-features = ['charges', 'age', 'bmi']
+    print(df.head())
+    print("--"*50)
+    print(df.describe())
 
-#Frequency of data
-for i, feature in enumerate(features):
-    axs[i].hist(df_oneht[feature], bins=40,  color='skyblue', edgecolor='black')
-    axs[i].set_title(feature)
+    #ONE HOT
+    df_oneht = pd.get_dummies(df, columns=['sex', 'smoker', 'region'], drop_first=True, dtype='int64')
+    sns.scatterplot(x=df_oneht['age'], y=df_oneht['charges'], hue=df_oneht['smoker_yes'])
 
-# VISUALIZE RELATIONS
-sns.pairplot(df, height=2.5)
-plt.tight_layout()
-plt.show()
+    #VISUALUZE FRECUENCY 
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10)) #Create a a canvas with 2 rows and 2 columns
+    axs = axs.flatten() #We make axs of 1D
+    features = ['charges', 'age', 'bmi']
 
-#BMI OUTLIERS
-Q1_bmi = df_oneht['bmi'].quantile(0.25)
-Q2_bmi = df_oneht['bmi'].median()
-Q3_bmi = df_oneht['bmi'].quantile(0.75)
-iqr = Q3_bmi - Q1_bmi
+    #Frequency of data
+    for i, feature in enumerate(features):
+        axs[i].hist(df_oneht[feature], bins=40,  color='skyblue', edgecolor='black')
+        axs[i].set_title(feature)
 
-min_lim = Q1_bmi -(1.5*iqr)
-max_lim = Q3_bmi + (1.5*iqr)
-print("--"*50)
-print(f'Rango para detección de outliers: {min_lim}, {max_lim}')
-print("--"*50)
+    # VISUALIZE RELATIONS
+    sns.pairplot(df, height=2.5)
+    plt.tight_layout()
+    plt.show()
 
-bmi_df = df_oneht[df_oneht['bmi'] < max_lim]
+    #BMI OUTLIERS
+    bmi_min, bmi_max = outliers(df, 'bmi')
+    print("--"*50)
+    print(f'Rango para detección de outliers: {bmi_min}, {bmi_max}')
+    print("--"*50)
 
-#CHARGES OUTLIERS
-charges_df = df_oneht[df_oneht['charges'] < 50000]
+    bmi_df = df[df['bmi'] < bmi_max]
 
-#CORRELATION
-corr = df_oneht[['age', 'bmi', 'charges']].corr()
-print(corr)
-print("--"*50)
-corr_matrix = np.corrcoef(df_oneht[['age', 'bmi', 'charges']].values.T)
-print(corr_matrix)
+    #CHARGES OUTLIERS
+    charges_df = df[df['charges'] < 50000]
+
+    #CORRELATION
+    corr = df[['age', 'bmi', 'charges']].corr()
+    print(corr)
+    print("--"*50)
+    corr_matrix = np.corrcoef(df[['age', 'bmi', 'charges']].values.T)
+    print(corr_matrix)
 
 
 #INSIGHTS:
 # the data of BMI feature has a normal distribution
 # the data of charges has a asimetric distribution to the right
-# We can a positive relation between charges & age 
-
+# We can a positive relation between charges & age  
