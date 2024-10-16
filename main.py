@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+import sklearn.metrics as metrics
 
 def run():
     #LOAD DATA
@@ -38,8 +39,12 @@ def run():
     model = LinearRegression()
     model.fit(X_train, Y_train) #Train model
     
+    coef = model.coef_ #Model parameters
+    intercept = model.intercept_ #Bias term
     y_pred = model.predict(X_test)
-    print(y_pred[:20])
+    
+    #EVALUATE MODEL
+    
 
 if __name__ == '__main__':
     run()
