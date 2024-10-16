@@ -44,7 +44,11 @@ def run():
     y_pred = model.predict(X_test)
     
     #EVALUATE MODEL
+    mse = metrics.mean_squared_error(Y_test, y_pred) #Mean Squared Error
+    r2 = metrics.r2_score(Y_test, y_pred) #R^2
     
+    print(f'Mean Square Error: {mse.round(4)}')
+    print("R^2", r2)
 
 if __name__ == '__main__':
     run()
