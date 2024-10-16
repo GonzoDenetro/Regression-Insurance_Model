@@ -6,6 +6,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import sklearn.metrics as metrics
+from regressors import stats
+
 
 def run():
     #LOAD DATA
@@ -20,7 +22,8 @@ def run():
     df = df[(df['bmi'] < max_bmi) & (df['bmi'] > min_bmi)]
     
     #SPLIT FEATURES
-    X = df[['age', 'bmi', 'children', 'sex_male', 'smoker_yes']].values
+    X_columns = ['age', 'bmi', 'children', 'sex_male', 'smoker_yes']
+    X = df[X_columns].values
     Y = df['charges'].values.reshape(-1, 1)
     
     #SPLIT TRAIN & TEST SET    
@@ -39,9 +42,11 @@ def run():
     model = LinearRegression()
     model.fit(X_train, Y_train) #Train model
     
-    coef = model.coef_ #Model parameters
-    intercept = model.intercept_ #Bias term
+    coef = model.coef_.T #Model parameters
+    intercept = model.intercept_[0] #Bias term
     y_pred = model.predict(X_test)
+    
+    print(f'Model Parameters: {intercept}, {coef}')
     
     #EVALUATE MODEL
     mse = metrics.mean_squared_error(Y_test, y_pred) #Mean Squared Error
@@ -49,6 +54,14 @@ def run():
     
     print(f'Mean Square Error: {mse.round(4)}')
     print("R^2", r2)
+    
+    #MODEL STATS
+    Y_test = Y_test.reshape(-1)
+    model.coef_ = model.coef_.reshape(-1)
+    model.intercept_ = model.intercept_[0]
+    
+    print("=========Summary========")
+    stats.summary(model, X_test, Y_test, X_columns)   
 
 if __name__ == '__main__':
     run()
