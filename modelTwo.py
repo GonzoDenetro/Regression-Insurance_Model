@@ -20,21 +20,43 @@ from regressors import stats
 # 3.-a logical operation indicating whether the person is overweight and a smoker. 
 # --------------
 
-#LOAD DATA 
-df = pd.read_csv('./insurance.csv')
-
-#ONE HOT
-df = pd.get_dummies(df, columns=['sex', 'smoker', 'region'], drop_first=True, dtype='int64')
-
-#FEATURE ENGINEERING
-df_second = df.copy()
-df_second['age2'] = df['age']**2
-df_second['overweight'] = (df['bmi'] > 25).astype(int)
-df_second['overweight*smoker'] = df_second['overweight'] * df_second['smoker_yes'] 
-print(df_second.head())
 
 def run():
-    pass
+    #LOAD DATA 
+    df = pd.read_csv('./insurance.csv')
+
+    #ONE HOT
+    df = pd.get_dummies(df, columns=['sex', 'smoker', 'region'], drop_first=True, dtype='int64')
+
+    #REMOVE OUTLIERS
+    df_second = df.copy()
+    df_second = df_second[df_second['charges'] < 50000]
+    min_bmi, max_bmi = outliers(df_second, 'bmi')
+    df = df[(df['bmi'] < max_bmi) & (df['bmi'] > min_bmi)]
+
+    #FEATURE ENGINEERING
+    df_second['age2'] = df['age']**2
+    df_second['overweight'] = (df['bmi'] > 25).astype(int)
+    df_second['overweight*smoker'] = df_second['overweight'] * df_second['smoker_yes'] 
+    
+    #SPLIT FEATURES
+    columns = ['age', 'bmi', 'children', 'sex_male', 'smoker_yes','region_northwest', 
+               'region_southeast', 'region_southwest', 'age2','overweight', 'overweight*smoker']
+    X = df[columns].values
+    Y = df['charges'].values.reshape(-1, 1)
+    
+    #SPLIT TEST & TRAIN DATA
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=42, test_size=0.25)
+    
+    #SCALE DATA
+    x_scaler = StandardScaler().fit(X)
+    y_scaler = StandardScaler.fit(Y)
+    
+    X_train = x_scaler.transform(X_train)
+    X_test = x_scaler.transform(X_test)
+    Y_train = x_scaler.transform(Y_train)
+    Y_test = x_scaler.transform(Y_test)
+    
 
 if __name__ == '__main__':
     run()
