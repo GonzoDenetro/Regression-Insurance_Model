@@ -57,6 +57,10 @@ def run():
     Y_train = x_scaler.transform(Y_train)
     Y_test = x_scaler.transform(Y_test)
     
+    #MODEL
+    model = LinearRegression()
+    model.fit(X_train, Y_train) #Train second model
+    
 
 if __name__ == '__main__':
     run()
