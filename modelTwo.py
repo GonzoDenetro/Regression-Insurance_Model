@@ -32,35 +32,64 @@ def run():
     df_second = df.copy()
     df_second = df_second[df_second['charges'] < 50000]
     min_bmi, max_bmi = outliers(df_second, 'bmi')
-    df = df[(df['bmi'] < max_bmi) & (df['bmi'] > min_bmi)]
-
+    df_second = df_second[(df['bmi'] < max_bmi) & (df['bmi'] > min_bmi)]
+    
     #FEATURE ENGINEERING
     df_second['age2'] = df['age']**2
     df_second['overweight'] = (df['bmi'] > 25).astype(int)
     df_second['overweight*smoker'] = df_second['overweight'] * df_second['smoker_yes'] 
     
-    #SPLIT FEATURES
-    columns = ['age', 'bmi', 'children', 'sex_male', 'smoker_yes','region_northwest', 
-               'region_southeast', 'region_southwest', 'age2','overweight', 'overweight*smoker']
-    X = df[columns].values
-    Y = df['charges'].values.reshape(-1, 1)
+
     
+    #------------
+    print("NANA")
+    nan_values = df_second[df_second['overweight*smoker'].isna()]
+    print(nan_values)
+    
+    
+    #SPLIT FEATURES
+    columns = ['age', 'bmi', 'children', 'sex_male', 'smoker_yes', 'age2','overweight', 'overweight*smoker']
+    X = df_second[columns].values
+    Y = df_second['charges'].values.reshape(-1, 1)
+    
+        
     #SPLIT TEST & TRAIN DATA
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, random_state=42, test_size=0.25)
     
     #SCALE DATA
     x_scaler = StandardScaler().fit(X)
-    y_scaler = StandardScaler.fit(Y)
+    y_scaler = StandardScaler().fit(Y)
     
     X_train = x_scaler.transform(X_train)
     X_test = x_scaler.transform(X_test)
-    Y_train = x_scaler.transform(Y_train)
-    Y_test = x_scaler.transform(Y_test)
+    Y_train = y_scaler.transform(Y_train)
+    Y_test = y_scaler.transform(Y_test)
+    
+    #Look if we have NaN values
+    x_nan = pd.isna(X_train).any()
+    print(x_nan)
+    
+    
     
     #MODEL
     model = LinearRegression()
-    model.fit(X_train, Y_train) #Train second model
+    model.fit(X_train, Y_train) #Train model
     
+    #PREDICTION
+    y_pred = model.predict(X_test)
+    
+    #EVALUATE
+    r2 = metrics.r2_score(Y_test, y_pred)
+    print(r2)
+
+"""
+    #MODEL STATS
+    Y_test = Y_test.reshape(-1)
+    model.coef_ = model.coef_.reshape(-1)
+    model.intercept_ = model.intercept_[0]
+
+    print("=========Summary========")
+    stats.summary(model, X_test, Y_test, columns)  """
 
 if __name__ == '__main__':
     run()
