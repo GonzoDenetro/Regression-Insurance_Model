@@ -1,4 +1,3 @@
-from analyze import outliers
 import pandas as pd
 import seaborn as sns 
 import matplotlib.pyplot as plt
@@ -31,24 +30,15 @@ def run():
     #REMOVE OUTLIERS
     df_second = df.copy()
     df_second = df_second[df_second['charges'] < 50000]
-    min_bmi, max_bmi = outliers(df_second, 'bmi')
-    df_second = df_second[(df['bmi'] < max_bmi) & (df['bmi'] > min_bmi)]
     
     #FEATURE ENGINEERING
     df_second['age2'] = df['age']**2
     df_second['overweight'] = (df['bmi'] > 25).astype(int)
     df_second['overweight*smoker'] = df_second['overweight'] * df_second['smoker_yes'] 
     
-
-    
-    #------------
-    print("NANA")
-    nan_values = df_second[df_second['overweight*smoker'].isna()]
-    print(nan_values)
-    
     
     #SPLIT FEATURES
-    columns = ['age', 'bmi', 'children', 'sex_male', 'smoker_yes', 'age2','overweight', 'overweight*smoker']
+    columns = ['bmi', 'children', 'age2','overweight', 'overweight*smoker']
     X = df_second[columns].values
     Y = df_second['charges'].values.reshape(-1, 1)
     
@@ -70,9 +60,8 @@ def run():
     print(x_nan)
     
     
-    
     #MODEL
-    model = LinearRegression()
+    model = LinearRegression(fit_intercept=False) # We dont add the intercept as parameter
     model.fit(X_train, Y_train) #Train model
     
     #PREDICTION
@@ -82,15 +71,20 @@ def run():
     r2 = metrics.r2_score(Y_test, y_pred)
     print(r2)
 
-"""
+
     #MODEL STATS
     Y_test = Y_test.reshape(-1)
     model.coef_ = model.coef_.reshape(-1)
-    model.intercept_ = model.intercept_[0]
 
     print("=========Summary========")
-    stats.summary(model, X_test, Y_test, columns)  """
+    stats.summary(model, X_test, Y_test, columns)
 
 if __name__ == '__main__':
     run()
     
+#INSIGHTS
+# After looking to the model stats, with the p-value we can see tha,
+# the features with p-value greater of 5% can be discard,
+# the features with a p-value lower than 5% are more significative
+
+#The features that are gonna be remove are intecept, age and sex
